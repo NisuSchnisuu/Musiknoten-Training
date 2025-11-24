@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Musik-Master App</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #00cec9;
+            --bg: #dfe6e9;
+            --surface: #ffffff;
+            --error: #ff7675;
+            --success: #00b894;
+            --text: #2d3436;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text);
+            user-select: none;
+        }
+
+        .app-container {
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        h1 { margin-top: 0; color: var(--primary); }
+
+        /* --- SCREENS --- */
+        .screen { display: none; animation: fadeIn 0.5s; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- START MENU --- */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-menu {
+            padding: 18px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s, filter 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-menu:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .btn-easy { background-color: var(--success); }
+        .btn-medium { background-color: var(--primary); }
+        .btn-hard { background-color: var(--error); }
+
+        /* --- GAME HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between; /* Verteilt Menü, Leben, Score */
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        
+        /* Back Button Style */
+        .back-btn {
+            background: none;
+            border: 2px solid var(--text);
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: var(--text); color: white; }
+
+        .lives { color: var(--error); letter-spacing: 2px; }
+        .score { color: var(--primary); }
+
+        /* --- SHEET MUSIC --- */
+        .sheet-music {
+            background: #fff;
+            border: 3px solid var(--text);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            height: 220px;
+            position: relative;
+        }
+
+        svg { width: 100%; height: 100%; }
+
+        #accidental {
+            font-family: 'Times New Roman', serif;
+            dominant-baseline: central;
+            text-anchor: end;
+            pointer-events: none;
+        }
+
+        /* --- INPUT METHODS --- */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .options-grid.easy-mode { grid-template-columns: repeat(2, 1fr); }
+
+        .game-btn {
+            background-color: var(--bg);
+            border: none;
+            padding: 15px 5px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text);
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+        .game-btn:hover { transform: translateY(-2px); background-color: var(--secondary); color: white; }
+        .game-btn:active { transform: translateY(2px); box-shadow: none; }
+        
+        .game-btn.correct { background-color: var(--success) !important; color: white !important; animation: pop 0.3s; }
+        .game-btn.wrong { background-color: var(--error) !important; color: white !important; animation: shake 0.4s; }
+
+        /* Hard Mode Input */
+        .input-area { display: flex; gap: 10px; justify-content: center; }
+
+        #answer-input {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid var(--bg);
+            border-radius: 10px;
+            width: 60%;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #answer-input:focus { border-color: var(--primary); }
+        
+        #submit-btn {
+            padding: 0 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .feedback-msg {
+            height: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--error);
+        }
+
+        /* --- OVERLAYS --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        @keyframes pop { 50% { transform: scale(1.15); } }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.98);
+            border-radius: 30px;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100;
+            visibility: hidden; opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.visible { visibility: visible; opacity: 1; }
+        .overlay h2 { color: var(--error); font-size: 2.5rem; margin-bottom: 10px; }
+        
+        .restart-btn {
+            background-color: var(--text);
+            color: white;
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border: none; border-radius: 10px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div id="start-screen" class="screen active">
+        <h1>🎵 Noten-Trainer</h1>
+        <p>Wähle deine Schwierigkeit:</p>
+        <div class="menu-buttons">
+            <button class="btn-menu btn-easy" onclick="initGame('easy')">
+                🌱 Einfach<br><span style="font-size:0.8rem; opacity:0.8">Wenig Noten, 4 Auswahlmöglichkeiten</span>
+            </button>
+            <button class="btn-menu btn-medium" onclick="initGame('medium')">
+                🎵 Mittel<br><span style="font-size:0.8rem; opacity:0.8">Alle Noten, 12 Auswahlmöglichkeiten</span>
+            </button>
+            <button class="btn-menu btn-hard" onclick="initGame('hard')">
+                🔥 Schwierig<br><span style="font-size:0.8rem; opacity:0.8">Alle Noten, Selber schreiben!</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <header>
+            <button class="back-btn" onclick="showStartScreen()">🏠 Menü</button>
+            <div class="lives" id="lives-display">❤❤❤</div>
+            <div class="score" id="score-display">0</div>
+        </header>
+
+        <div class="sheet-music">
+            <svg id="staff" viewBox="0 0 200 200">
+                <g stroke="#2d3436" stroke-width="2">
+                    <line x1="10" y1="60" x2="190" y2="60" />
+                    <line x1="10" y1="80" x2="190" y2="80" />
+                    <line x1="10" y1="100" x2="190" y2="100" />
+                    <line x1="10" y1="120" x2="190" y2="120" />
+                    <line x1="10" y1="140" x2="190" y2="140" />
+                </g>
+                <text x="15" y="135" font-size="85" font-family="serif">𝄞</text>
+                
+                <g id="note-group">
+                    <g id="ledger-lines"></g>
+                    <ellipse id="note-head" cx="110" cy="100" rx="11" ry="8" transform="rotate(-15 110 100)" fill="#2d3436"/>
+                    <line id="note-stem" x1="120" y1="100" x2="120" y2="50" stroke="#2d3436" stroke-width="2"/>
+                    <text id="accidental" x="92" y="100" font-size="34" fill="#2d3436">♯</text>
+                </g>
+            </svg>
+        </div>
+
+        <div id="interaction-area"></div>
+        <div id="feedback-text" class="feedback-msg"></div>
+    </div>
+
+    <div class="overlay" id="game-over">
+        <h2>Verloren!</h2>
+        <p>Punkte: <strong id="final-score" style="font-size:1.5rem">0</strong></p>
+        <button class="restart-btn" onclick="showStartScreen()">Zum Hauptmenü</button>
+    </div>
+
+</div>
+
+<script>
+    // --- DATEN ---
+    const allBaseNotes = [
+        { name: "G", y: 190 }, { name: "A", y: 180 }, { name: "H", y: 170 },
+        { name: "C", y: 160 }, { name: "D", y: 150 }, { name: "E", y: 140 },
+        { name: "F", y: 130 }, { name: "G", y: 120 }, { name: "A", y: 110 },
+        { name: "H", y: 100 }, { name: "C", y: 90 },  { name: "D", y: 80 },
+        { name: "E", y: 70 },  { name: "F", y: 60 },  { name: "G", y: 50 },
+        { name: "A", y: 40 },  { name: "H", y: 30 },  { name: "C", y: 20 }
+    ];
+
+    const accidentals = [
+        { symbol: "", type: "natural" },
+        { symbol: "♯", type: "sharp" },
+        { symbol: "♭", type: "flat" }
+    ];
+
+    // --- STATE ---
+    let gameState = {
+        score: 0,
+        lives: 3,
+        difficulty: 'medium',
+        currentNote: null,
+        isAnswering: false
+    };
+
+    // --- DOM REFERENCES ---
+    const screens = {
+        start: document.getElementById('start-screen'),
+        game: document.getElementById('game-screen')
+    };
+    const ui = {
+        lives: document.getElementById('lives-display'),
+        score: document.getElementById('score-display'),
+        interaction: document.getElementById('interaction-area'),
+        feedback: document.getElementById('feedback-text'),
+        overlay: document.getElementById('game-over'),
+        finalScore: document.getElementById('final-score'),
+        head: document.getElementById('note-head'),
+        stem: document.getElementById('note-stem'),
+        acc: document.getElementById('accidental'),
+        ledgers: document.getElementById('ledger-lines')
+    };
+
+    // --- APP FLOW ---
+
+    function showStartScreen() {
+        ui.overlay.classList.remove('visible');
+        screens.game.classList.remove('active');
+        screens.start.classList.add('active');
+    }
+
+    function initGame(level) {
+        gameState.difficulty = level;
+        gameState.score = 0;
+        gameState.lives = 3;
+        gameState.isAnswering = false;
+
+        screens.start.classList.remove('active');
+        screens.game.classList.add('active');
+        ui.overlay.classList.remove('visible');
+        ui.feedback.textContent = "";
+        
+        updateStats();
+        nextRound();
+    }
+
+    function updateStats() {
+        let h = "";
+        for(let i=0; i<gameState.lives; i++) h += "❤";
+        ui.lives.textContent = h;
+        ui.score.textContent = gameState.score;
+    }
+
+    // --- NOTE GENERATION ---
+
+    function getNoteName(base, type) {
+        if(type === "natural") return base;
+        if(type === "sharp") return base + "is";
+        if(base === "H") return "B";
+        if(base === "E") return "Es";
+        if(base === "A") return "As";
+        return base + "es";
+    }
+
+    function generateNote() {
+        let pool = allBaseNotes;
+        if (gameState.difficulty === 'easy') {
+            pool = allBaseNotes.filter(n => n.y >= 50 && n.y <= 160);
+        }
+
+        const base = pool[Math.floor(Math.random() * pool.length)];
+        
+        let acc = accidentals[0];
+        if (gameState.difficulty !== 'easy' && Math.random() > 0.6) {
+            acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
+        } else if (gameState.difficulty === 'easy' && Math.random() > 0.8) {
+            acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
+        }
+
+        return {
+            base: base,
+            acc: acc,
+            correctName: getNoteName(base.name, acc.type)
+        };
+    }
+
+    function drawNote(note) {
+        const y = note.base.y;
+        
+        ui.head.setAttribute('cy', y);
+        ui.head.setAttribute('transform', `rotate(-15 110 ${y})`);
+
+        if (note.acc.symbol !== "") {
+            ui.acc.style.display = "block";
+            ui.acc.textContent = note.acc.symbol;
+            ui.acc.setAttribute('y', y); 
+        } else {
+            ui.acc.style.display = "none";
+        }
+
+        if (y >= 100) {
+            ui.stem.setAttribute('x1', 119); ui.stem.setAttribute('x2', 119);
+            ui.stem.setAttribute('y1', y); ui.stem.setAttribute('y2', y - 35);
+        } else {
+            ui.stem.setAttribute('x1', 101); ui.stem.setAttribute('x2', 101);
+            ui.stem.setAttribute('y1', y); ui.stem.setAttribute('y2', y + 35);
+        }
+
+        ui.ledgers.innerHTML = "";
+        if (y >= 160) { for (let ly = 160; ly <= y; ly += 20) addLedgerLine(ly); }
+        if (y <= 40) { for (let ly = 40; ly >= y; ly -= 20) addLedgerLine(ly); }
+    }
+
+    function addLedgerLine(y) {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", 85); line.setAttribute("x2", 135);
+        line.setAttribute("y1", y); line.setAttribute("y2", y);
+        line.setAttribute("stroke", "#2d3436"); line.setAttribute("stroke-width", "2");
+        ui.ledgers.appendChild(line);
+    }
+
+    // --- GAME LOOP ---
+
+    function nextRound() {
+        if(gameState.lives <= 0) return;
+        
+        gameState.isAnswering = false;
+        ui.feedback.textContent = "";
+        gameState.currentNote = generateNote();
+        drawNote(gameState.currentNote);
+
+        ui.interaction.innerHTML = "";
+
+        if (gameState.difficulty === 'hard') {
+            renderHardModeInput();
+        } else {
+            renderButtons();
+        }
+    }
+
+    function renderButtons() {
+        const isEasy = gameState.difficulty === 'easy';
+        const grid = document.createElement('div');
+        grid.className = isEasy ? 'options-grid easy-mode' : 'options-grid';
+        
+        const pool = ["C", "D", "E", "F", "G", "A", "H", "Cis", "Dis", "Fis", "Gis", "Ais", "Des", "Es", "Ges", "As", "B"];
+        let opts = new Set([gameState.currentNote.correctName]);
+        const count = isEasy ? 4 : 12;
+
+        while(opts.size < count) opts.add(pool[Math.floor(Math.random()*pool.length)]);
+
+        Array.from(opts).sort(() => Math.random() - 0.5).forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'game-btn';
+            btn.textContent = opt;
+            btn.onclick = () => handleAnswer(opt, btn);
+            grid.appendChild(btn);
+        });
+        ui.interaction.appendChild(grid);
+    }
+
+    function renderHardModeInput() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'input-area';
+
+        const input = document.createElement('input');
+        input.type = "text";
+        input.id = "answer-input";
+        input.placeholder = "Note (z.B. Cis)";
+        input.autocomplete = "off";
+
+        const submit = document.createElement('button');
+        submit.id = "submit-btn";
+        submit.textContent = "OK";
+        submit.onclick = () => {
+            if(input.value.trim() !== "") handleAnswer(input.value.trim(), null);
+        };
+
+        input.addEventListener("keypress", function(event) {
+            if (event.key === "Enter" && input.value.trim() !== "") {
+                handleAnswer(input.value.trim(), null);
+            }
+        });
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(submit);
+        ui.interaction.appendChild(wrapper);
+        setTimeout(() => input.focus(), 50);
+    }
+
+    function handleAnswer(answer, element) {
+        if(gameState.isAnswering) return;
+        
+        const isCorrect = answer.toLowerCase() === gameState.currentNote.correctName.toLowerCase();
+        gameState.isAnswering = true;
+
+        if (isCorrect) {
+            if(element) element.classList.add('correct');
+            else {
+                document.getElementById('answer-input').style.borderColor = "var(--success)";
+                document.getElementById('submit-btn').style.backgroundColor = "var(--success)";
+            }
+            gameState.score++;
+            updateStats();
+            setTimeout(nextRound, 800);
+        } else {
+            if(element) element.classList.add('wrong');
+            else {
+                 document.getElementById('answer-input').style.borderColor = "var(--error)";
+                 document.getElementById('submit-btn').style.backgroundColor = "var(--error)";
+                 ui.feedback.textContent = `Falsch! Richtig wäre: ${gameState.currentNote.correctName}`;
+            }
+            
+            gameState.lives--;
+            updateStats();
+
+            if(gameState.lives <= 0) {
+                setTimeout(() => {
+                    ui.finalScore.textContent = gameState.score;
+                    ui.overlay.classList.add('visible');
+                }, 1000);
+            } else {
+                setTimeout(nextRound, gameState.difficulty === 'hard' ? 1500 : 800);
+            }
+        }
+    }
+</script>
+</body>
+</html>
