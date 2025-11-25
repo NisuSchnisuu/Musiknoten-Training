@@ -3,239 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎵 Musik-Master App</title>
+    <title>🎵 Musik-Master 10.0 (Smart Check)</title>
     <style>
+        /* --- BASIS STYLES --- */
         :root {
-            --primary: #6c5ce7;
-            --secondary: #a29bfe;
-            --accent: #00cec9;
-            --bg: #dfe6e9;
-            --surface: #ffffff;
-            --error: #ff7675;
-            --success: #00b894;
-            --text: #2d3436;
+            --primary: #6c5ce7; --secondary: #a29bfe; --accent: #00cec9;
+            --bg: #dfe6e9; --surface: #ffffff; --error: #ff7675;
+            --success: #00b894; --text: #2d3436;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: var(--text);
-            user-select: none;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; color: var(--text); user-select: none;
         }
-
         .app-container {
-            background-color: var(--surface);
-            padding: 2rem;
-            border-radius: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
-            position: relative;
-            transition: all 0.3s ease;
+            background-color: var(--surface); padding: 2rem; border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;
+            max-width: 750px; width: 90%; position: relative; transition: all 0.3s ease;
+            max-height: 95vh; overflow-y: auto;
         }
-
         h1 { margin-top: 0; color: var(--primary); }
-
-        /* --- SCREENS --- */
-        .screen { display: none; animation: fadeIn 0.5s; }
+        h2 { color: var(--text); }
+        .screen { display: none; animation: fadeIn 0.4s; }
         .screen.active { display: block; }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- START MENU --- */
-        .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 30px;
+        
+        /* --- DASHBOARD --- */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .dash-card {
+            background: var(--bg); padding: 20px; border-radius: 20px;
+            cursor: pointer; transition: transform 0.2s, background 0.2s;
+            border: 2px solid transparent; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 10px;
         }
+        .dash-card:hover { transform: translateY(-5px); background: #fff; border-color: var(--primary); }
+        .dash-icon { font-size: 3rem; }
+        .dash-title { font-weight: bold; font-size: 1.2rem; }
 
-        .btn-menu {
-            padding: 18px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            transition: transform 0.2s, filter 0.2s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
+        /* --- THEORIE --- */
+        .theory-content { text-align: left; line-height: 1.6; }
+        .theory-section { margin-bottom: 25px; }
+        .theory-box { background: #f1f2f6; border-left: 5px solid var(--accent); padding: 15px; margin: 10px 0; border-radius: 0 10px 10px 0; }
+        .mnemonic { font-weight: bold; color: var(--primary); font-size: 1.1em; display: block; margin-top: 5px;}
+        .highlight { color: var(--error); font-weight: bold; }
 
+        /* --- UI ELEMENTE --- */
+        .menu-buttons { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+        .btn-menu { padding: 18px; font-size: 1.2rem; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; color: white; transition: transform 0.2s, filter 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .btn-menu:hover { transform: translateY(-3px); filter: brightness(1.1); }
         .btn-easy { background-color: var(--success); }
         .btn-medium { background-color: var(--primary); }
         .btn-hard { background-color: var(--error); }
-
-        /* --- GAME HEADER --- */
-        header {
-            display: flex;
-            justify-content: space-between; /* Verteilt Menü, Leben, Score */
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            font-weight: 800;
-        }
         
-        /* Back Button Style */
-        .back-btn {
-            background: none;
-            border: 2px solid var(--text);
-            padding: 5px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: var(--text);
-            transition: all 0.2s;
-        }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.2rem; font-weight: 800; }
+        .back-btn { background: none; border: 2px solid var(--text); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: var(--text); transition: all 0.2s; }
         .back-btn:hover { background: var(--text); color: white; }
-
-        .lives { color: var(--error); letter-spacing: 2px; }
-        .score { color: var(--primary); }
-
-        /* --- SHEET MUSIC --- */
-        .sheet-music {
-            background: #fff;
-            border: 3px solid var(--text);
-            border-radius: 15px;
-            margin-bottom: 25px;
-            height: 220px;
-            position: relative;
-        }
+        
+        /* --- NOTENBLATT --- */
+        .sheet-music { background: #fff; border: 3px solid var(--text); border-radius: 15px; margin-bottom: 25px; height: 220px; position: relative; overflow: hidden; }
+        /* Wir nutzen wieder cursor: pointer oder none je nach Modus, aber Ghost Note regelt das Feedback */
+        .sheet-music.interactive { cursor: none; }
+        .sheet-music.interactive:hover { border-color: var(--primary); }
 
         svg { width: 100%; height: 100%; }
+        .acc-text { font-family: 'Times New Roman', serif; dominant-baseline: central; text-anchor: end; pointer-events: none; }
 
-        #accidental {
-            font-family: 'Times New Roman', serif;
-            dominant-baseline: central;
-            text-anchor: end;
-            pointer-events: none;
-        }
-
-        /* --- INPUT METHODS --- */
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
+        /* --- GAME INPUTS --- */
+        .options-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .options-grid.easy-mode { grid-template-columns: repeat(2, 1fr); }
-
-        .game-btn {
-            background-color: var(--bg);
-            border: none;
-            padding: 15px 5px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--text);
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-        }
+        .game-btn { background-color: var(--bg); border: none; padding: 15px 5px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; color: var(--text); cursor: pointer; transition: transform 0.1s, background-color 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
         .game-btn:hover { transform: translateY(-2px); background-color: var(--secondary); color: white; }
-        .game-btn:active { transform: translateY(2px); box-shadow: none; }
-        
         .game-btn.correct { background-color: var(--success) !important; color: white !important; animation: pop 0.3s; }
         .game-btn.wrong { background-color: var(--error) !important; color: white !important; animation: shake 0.4s; }
+        
+        .place-controls { display: flex; justify-content: center; gap: 20px; align-items: center; margin-bottom: 15px; }
+        .acc-toggle {
+            width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--bg);
+            background: white; font-size: 1.5rem; font-family: 'Times New Roman', serif;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .acc-toggle.selected { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.1); }
+        .target-note-display { font-size: 2rem; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
 
-        /* Hard Mode Input */
+        /* --- HARD MODE INPUT --- */
         .input-area { display: flex; gap: 10px; justify-content: center; }
-
-        #answer-input {
-            padding: 15px;
-            font-size: 1.2rem;
-            border: 2px solid var(--bg);
-            border-radius: 10px;
-            width: 60%;
-            text-align: center;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        #answer-input:focus { border-color: var(--primary); }
+        #answer-input { padding: 15px; font-size: 1.2rem; border: 2px solid var(--bg); border-radius: 10px; width: 60%; text-align: center; outline: none; transition: border-color 0.3s; }
+        #submit-btn { padding: 0 25px; background-color: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         
-        #submit-btn {
-            padding: 0 25px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .feedback-msg { height: 20px; margin-top: 10px; font-weight: bold; color: var(--error); }
+        
+        /* --- PIANO --- */
+        .piano-container { display: flex; justify-content: center; position: relative; height: 180px; margin-top: 20px; background: #333; padding: 10px; border-radius: 0 0 15px 15px; box-shadow: inset 0 5px 10px rgba(0,0,0,0.5); }
+        .key { position: relative; cursor: pointer; user-select: none; border-radius: 0 0 5px 5px; transition: background 0.1s; }
+        .key.white { width: 40px; height: 100%; background: white; margin: 0 2px; box-shadow: 0 5px 5px rgba(0,0,0,0.2); z-index: 1; }
+        .key.white:active, .key.white.active { background: #eee; transform: translateY(2px); }
+        .key.black { width: 28px; height: 60%; background: #222; position: absolute; top: 0; z-index: 2; box-shadow: 0 3px 5px rgba(0,0,0,0.3); }
+        .key.black:active, .key.black.active { background: #000; transform: translateY(2px); }
 
-        .feedback-msg {
-            height: 20px;
-            margin-top: 10px;
-            font-weight: bold;
-            color: var(--error);
-        }
-
-        /* --- OVERLAYS --- */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
-        }
-        @keyframes pop { 50% { transform: scale(1.15); } }
-
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.98);
-            border-radius: 30px;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 100;
-            visibility: hidden; opacity: 0;
-            transition: opacity 0.3s;
-        }
+        /* --- ANIMATIONS & OVERLAYS --- */
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); border-radius: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; visibility: hidden; opacity: 0; transition: opacity 0.3s; }
         .overlay.visible { visibility: visible; opacity: 1; }
-        .overlay h2 { color: var(--error); font-size: 2.5rem; margin-bottom: 10px; }
-        
-        .restart-btn {
-            background-color: var(--text);
-            color: white;
-            margin-top: 20px;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            border: none; border-radius: 10px; cursor: pointer;
-        }
+        .restart-btn { background-color: var(--text); color: white; margin-top: 20px; padding: 15px 40px; font-size: 1.2rem; border: none; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     
-    <div id="start-screen" class="screen active">
-        <h1>🎵 Noten-Trainer</h1>
-        <p>Wähle deine Schwierigkeit:</p>
+    <div id="dashboard-screen" class="screen active">
+        <h1>🎵 Musik-Master</h1>
+        <p>Hallo! Was möchtest du heute machen?</p>
+        <div class="dashboard-grid">
+            <div class="dash-card" onclick="switchScreen('training-menu-screen')">
+                <div class="dash-icon">🎮</div>
+                <div class="dash-title">Training</div>
+                <small>Übungen & Spiele</small>
+            </div>
+            <div class="dash-card" onclick="startPianoMode()">
+                <div class="dash-icon">🎹</div>
+                <div class="dash-title">Klavier</div>
+                <small>Freies Spielen</small>
+            </div>
+            <div class="dash-card" onclick="switchScreen('theory-screen')">
+                <div class="dash-icon">📚</div>
+                <div class="dash-title">Theorie</div>
+                <small>Alles erklärt</small>
+            </div>
+            <div class="dash-card" onclick="switchScreen('highscores-screen')">
+                <div class="dash-icon">🏆</div>
+                <div class="dash-title">Rekorde</div>
+                <small>Deine Punkte</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="training-menu-screen" class="screen">
+        <header>
+            <button class="back-btn" onclick="switchScreen('dashboard-screen')">⬅ Zurück</button>
+            <span>Training wählen</span>
+            <div style="width:60px"></div>
+        </header>
+        <h2>Welche Übung?</h2>
         <div class="menu-buttons">
-            <button class="btn-menu btn-easy" onclick="initGame('easy')">
-                🌱 Einfach<br><span style="font-size:0.8rem; opacity:0.8">Wenig Noten, 4 Auswahlmöglichkeiten</span>
+            <button class="btn-menu btn-medium" onclick="selectGameType('read')">
+                👁️ Noten lesen<br><span style="font-size:0.8rem; opacity:0.8">Die Note wird gezeigt, du sagst den Namen.</span>
             </button>
-            <button class="btn-menu btn-medium" onclick="initGame('medium')">
-                🎵 Mittel<br><span style="font-size:0.8rem; opacity:0.8">Alle Noten, 12 Auswahlmöglichkeiten</span>
+            <button class="btn-menu btn-accent" style="background-color: var(--accent)" onclick="selectGameType('place')">
+                ✍️ Noten schreiben<br><span style="font-size:0.8rem; opacity:0.8">Platziere die Note (Oktaven egal!).</span>
             </button>
-            <button class="btn-menu btn-hard" onclick="initGame('hard')">
-                🔥 Schwierig<br><span style="font-size:0.8rem; opacity:0.8">Alle Noten, Selber schreiben!</span>
-            </button>
+        </div>
+    </div>
+
+    <div id="difficulty-screen" class="screen">
+        <header>
+            <button class="back-btn" onclick="switchScreen('training-menu-screen')">⬅ Zurück</button>
+            <span id="diff-title-mode">Training</span>
+            <div style="width:60px"></div>
+        </header>
+        <h2>Wähle deine Stufe:</h2>
+        <div class="menu-buttons">
+            <button class="btn-menu btn-easy" onclick="initGame('easy')">🌱 Einfach<br><span style="font-size:0.8rem; opacity:0.8">Nur Stammnoten, enger Bereich</span></button>
+            <button class="btn-menu btn-medium" onclick="initGame('medium')">🎵 Mittel<br><span style="font-size:0.8rem; opacity:0.8">Alle Noten, größerer Bereich</span></button>
+            <button class="btn-menu btn-hard" onclick="initGame('hard')">🔥 Schwierig<br><span style="font-size:0.8rem; opacity:0.8">Profi-Modus!</span></button>
         </div>
     </div>
 
     <div id="game-screen" class="screen">
         <header>
-            <button class="back-btn" onclick="showStartScreen()">🏠 Menü</button>
+            <button class="back-btn" onclick="showGameOver(false)">❌ Ende</button>
             <div class="lives" id="lives-display">❤❤❤</div>
             <div class="score" id="score-display">0</div>
         </header>
 
-        <div class="sheet-music">
+        <div id="place-instruction" style="display:none; text-align:center;">
+            <span>Suche Note:</span>
+            <div class="target-note-display" id="target-note-name">Cis</div>
+            <small style="opacity:0.7; display:block; margin-top:-5px; margin-bottom:10px">(Egal ob hoch oder tief!)</small>
+        </div>
+
+        <div class="sheet-music" id="sheet-music-container" onclick="handleStaffClick(event)" onmousemove="handleStaffMove(event)" onmouseleave="handleStaffLeave()">
             <svg id="staff" viewBox="0 0 200 200">
                 <g stroke="#2d3436" stroke-width="2">
                     <line x1="10" y1="60" x2="190" y2="60" />
@@ -250,25 +198,126 @@
                     <g id="ledger-lines"></g>
                     <ellipse id="note-head" cx="110" cy="100" rx="11" ry="8" transform="rotate(-15 110 100)" fill="#2d3436"/>
                     <line id="note-stem" x1="120" y1="100" x2="120" y2="50" stroke="#2d3436" stroke-width="2"/>
-                    <text id="accidental" x="92" y="100" font-size="34" fill="#2d3436">♯</text>
+                    <text id="accidental" x="92" y="100" font-size="34" fill="#2d3436" class="acc-text">♯</text>
+                </g>
+
+                <g id="ghost-group" style="display:none; opacity: 0.5; pointer-events: none;">
+                    <g id="ghost-ledgers"></g>
+                    <ellipse id="ghost-head" cx="110" cy="100" rx="11" ry="8" transform="rotate(-15 110 100)" fill="#6c5ce7"/>
+                    <text id="ghost-acc" x="92" y="100" font-size="34" fill="#6c5ce7" class="acc-text">♯</text>
                 </g>
             </svg>
+            <button id="replay-sound-btn" onclick="playCurrentGameNote()" style="position:absolute; bottom:10px; right:10px; border:none; background:none; cursor:pointer; font-size:1.5rem">🔊</button>
+        </div>
+
+        <div id="place-controls-area" class="place-controls" style="display:none;">
+            <div class="acc-toggle" id="btn-flat" onclick="selectAccidental('flat')">♭</div>
+            <div class="acc-toggle selected" id="btn-natural" onclick="selectAccidental('natural')">♮</div>
+            <div class="acc-toggle" id="btn-sharp" onclick="selectAccidental('sharp')">♯</div>
         </div>
 
         <div id="interaction-area"></div>
         <div id="feedback-text" class="feedback-msg"></div>
     </div>
 
+    <div id="theory-screen" class="screen">
+        <header>
+            <button class="back-btn" onclick="switchScreen('dashboard-screen')">⬅ Zurück</button>
+            <span>Theorie</span>
+            <div style="width:60px"></div>
+        </header>
+        <div class="theory-content">
+            <div class="theory-section">
+                <h3>🎼 Der Violinschlüssel</h3>
+                <p>Kringelt sich um die 2. Linie von unten (G-Linie).</p>
+            </div>
+            <div class="theory-section">
+                <h3>1. Noten auf den Linien</h3>
+                <div class="theory-box">
+                    <span class="mnemonic"><span class="highlight">E</span>ine <span class="highlight">G</span>ans <span class="highlight">H</span>at <span class="highlight">D</span>rei <span class="highlight">F</span>üße</span>
+                    <br>Noten: <strong>E - G - H - D - F</strong>
+                </div>
+            </div>
+            <div class="theory-section">
+                <h3>2. Noten in den Zwischenräumen</h3>
+                <div class="theory-box">
+                    <span class="mnemonic"><span class="highlight">F</span> - <span class="highlight">A</span> - <span class="highlight">C</span> - <span class="highlight">E</span></span>
+                    <br>Noten: <strong>F - A - C - E</strong>
+                    <br>(Fritz Aß Citronen Eis)
+                </div>
+            </div>
+            <div class="theory-section">
+                <h3>3. Vorzeichen</h3>
+                <ul>
+                    <li><strong>♯ (Kreuz):</strong> Hängt <strong>-is</strong> an (Fis, Gis).</li>
+                    <li><strong>♭ (B):</strong> Hängt <strong>-es</strong> an (Des, Es, As, B).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="piano-screen" class="screen">
+        <header>
+            <button class="back-btn" onclick="switchScreen('dashboard-screen')">🏠 Menü</button>
+            <span>Freies Spiel</span>
+            <div style="width:60px"></div>
+        </header>
+        <div class="sheet-music">
+            <svg id="piano-staff" viewBox="0 0 200 200">
+                <g stroke="#2d3436" stroke-width="2">
+                    <line x1="10" y1="60" x2="190" y2="60" />
+                    <line x1="10" y1="80" x2="190" y2="80" />
+                    <line x1="10" y1="100" x2="190" y2="100" />
+                    <line x1="10" y1="120" x2="190" y2="120" />
+                    <line x1="10" y1="140" x2="190" y2="140" />
+                </g>
+                <text x="15" y="135" font-size="85" font-family="serif">𝄞</text>
+                <g id="piano-note-group" style="display:none">
+                    <g id="piano-ledgers"></g>
+                    <ellipse id="piano-head" cx="110" cy="100" rx="11" ry="8" transform="rotate(-15 110 100)" fill="#2d3436"/>
+                    <line id="piano-stem" x1="120" y1="100" x2="120" y2="50" stroke="#2d3436" stroke-width="2"/>
+                    <text id="piano-acc" x="90" y="100" font-size="34" fill="#2d3436" class="acc-text">♯</text>
+                </g>
+            </svg>
+            <div id="piano-note-name" style="position:absolute; top:10px; right:20px; font-size:2rem; font-weight:bold; color:var(--primary)"></div>
+        </div>
+        <div id="piano-keyboard" class="piano-container"></div>
+    </div>
+
+    <div id="highscores-screen" class="screen">
+        <header>
+            <button class="back-btn" onclick="switchScreen('dashboard-screen')">⬅ Zurück</button>
+            <span>Rekorde</span>
+            <div style="width:60px"></div>
+        </header>
+        <ul id="score-list-ul" style="list-style: none; padding: 0;"></ul>
+    </div>
+
     <div class="overlay" id="game-over">
-        <h2>Verloren!</h2>
+        <h2 id="overlay-title">Verloren!</h2>
         <p>Punkte: <strong id="final-score" style="font-size:1.5rem">0</strong></p>
-        <button class="restart-btn" onclick="showStartScreen()">Zum Hauptmenü</button>
+        <button class="restart-btn" onclick="switchScreen('dashboard-screen')">Zum Hauptmenü</button>
+        <button class="restart-btn" style="background-color: var(--primary); margin-top:10px" onclick="initGame(gameState.difficulty)">Nochmal spielen</button>
     </div>
 
 </div>
 
 <script>
-    // --- DATEN ---
+    /* --- AUDIO ENGINE --- */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, duration = 0.5) {
+        if (!freq) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = 'triangle'; osc.frequency.value = freq;
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start();
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    /* --- DATA (Erweitert bis y=20 und y=30 für komplette Klick-Abdeckung) --- */
     const allBaseNotes = [
         { name: "G", y: 190 }, { name: "A", y: 180 }, { name: "H", y: 170 },
         { name: "C", y: 160 }, { name: "D", y: 150 }, { name: "E", y: 140 },
@@ -277,242 +326,276 @@
         { name: "E", y: 70 },  { name: "F", y: 60 },  { name: "G", y: 50 },
         { name: "A", y: 40 },  { name: "H", y: 30 },  { name: "C", y: 20 }
     ];
+    const accidentals = [{ symbol: "", type: "natural" }, { symbol: "♯", type: "sharp" }, { symbol: "♭", type: "flat" }];
 
-    const accidentals = [
-        { symbol: "", type: "natural" },
-        { symbol: "♯", type: "sharp" },
-        { symbol: "♭", type: "flat" }
-    ];
+    /* --- STATE --- */
+    let gameState = { score: 0, lives: 3, difficulty: 'medium', gameType: 'read', currentNote: null, isAnswering: false, selectedPlaceAccidental: 'natural' };
+    let highscores = JSON.parse(localStorage.getItem('musicScores')) || [];
 
-    // --- STATE ---
-    let gameState = {
-        score: 0,
-        lives: 3,
-        difficulty: 'medium',
-        currentNote: null,
-        isAnswering: false
-    };
-
-    // --- DOM REFERENCES ---
-    const screens = {
-        start: document.getElementById('start-screen'),
-        game: document.getElementById('game-screen')
-    };
+    /* --- UI REF --- */
     const ui = {
-        lives: document.getElementById('lives-display'),
-        score: document.getElementById('score-display'),
-        interaction: document.getElementById('interaction-area'),
-        feedback: document.getElementById('feedback-text'),
-        overlay: document.getElementById('game-over'),
-        finalScore: document.getElementById('final-score'),
-        head: document.getElementById('note-head'),
-        stem: document.getElementById('note-stem'),
-        acc: document.getElementById('accidental'),
-        ledgers: document.getElementById('ledger-lines')
+        lives: document.getElementById('lives-display'), score: document.getElementById('score-display'),
+        interaction: document.getElementById('interaction-area'), feedback: document.getElementById('feedback-text'),
+        overlay: document.getElementById('game-over'), overlayTitle: document.getElementById('overlay-title'), finalScore: document.getElementById('final-score'),
+        staffSvg: document.getElementById('sheet-music-container'),
+        noteGroup: document.getElementById('note-group'), head: document.getElementById('note-head'), stem: document.getElementById('note-stem'), acc: document.getElementById('accidental'), ledgers: document.getElementById('ledger-lines'),
+        ghostGroup: document.getElementById('ghost-group'), ghostHead: document.getElementById('ghost-head'), ghostAcc: document.getElementById('ghost-acc'), ghostLedgers: document.getElementById('ghost-ledgers'),
+        replayBtn: document.getElementById('replay-sound-btn'),
+        placeInstruction: document.getElementById('place-instruction'), targetNoteName: document.getElementById('target-note-name'), placeControls: document.getElementById('place-controls-area'),
+        accBtns: { natural: document.getElementById('btn-natural'), sharp: document.getElementById('btn-sharp'), flat: document.getElementById('btn-flat') },
+        pHead: document.getElementById('piano-head'), pStem: document.getElementById('piano-stem'), pAcc: document.getElementById('piano-acc'), pLedgers: document.getElementById('piano-ledgers'), pGroup: document.getElementById('piano-note-group'), pName: document.getElementById('piano-note-name'), scoreList: document.getElementById('score-list-ul')
     };
 
-    // --- APP FLOW ---
-
-    function showStartScreen() {
+    /* --- NAVIGATION --- */
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
         ui.overlay.classList.remove('visible');
-        screens.game.classList.remove('active');
-        screens.start.classList.add('active');
+        if(screenId === 'highscores-screen') updateHighscoreList();
+    }
+    function selectGameType(type) {
+        gameState.gameType = type;
+        document.getElementById('diff-title-mode').textContent = type === 'read' ? 'Noten lesen' : 'Noten schreiben';
+        switchScreen('difficulty-screen');
+    }
+    function startPianoMode() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        switchScreen('piano-screen');
+        initPiano();
     }
 
+    /* --- GAME INIT --- */
     function initGame(level) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         gameState.difficulty = level;
-        gameState.score = 0;
-        gameState.lives = 3;
-        gameState.isAnswering = false;
-
-        screens.start.classList.remove('active');
-        screens.game.classList.add('active');
-        ui.overlay.classList.remove('visible');
+        gameState.score = 0; gameState.lives = 3; gameState.isAnswering = false;
+        switchScreen('game-screen');
         ui.feedback.textContent = "";
         
-        updateStats();
-        nextRound();
-    }
-
-    function updateStats() {
-        let h = "";
-        for(let i=0; i<gameState.lives; i++) h += "❤";
-        ui.lives.textContent = h;
-        ui.score.textContent = gameState.score;
-    }
-
-    // --- NOTE GENERATION ---
-
-    function getNoteName(base, type) {
-        if(type === "natural") return base;
-        if(type === "sharp") return base + "is";
-        if(base === "H") return "B";
-        if(base === "E") return "Es";
-        if(base === "A") return "As";
-        return base + "es";
-    }
-
-    function generateNote() {
-        let pool = allBaseNotes;
-        if (gameState.difficulty === 'easy') {
-            pool = allBaseNotes.filter(n => n.y >= 50 && n.y <= 160);
-        }
-
-        const base = pool[Math.floor(Math.random() * pool.length)];
-        
-        let acc = accidentals[0];
-        if (gameState.difficulty !== 'easy' && Math.random() > 0.6) {
-            acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
-        } else if (gameState.difficulty === 'easy' && Math.random() > 0.8) {
-            acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
-        }
-
-        return {
-            base: base,
-            acc: acc,
-            correctName: getNoteName(base.name, acc.type)
-        };
-    }
-
-    function drawNote(note) {
-        const y = note.base.y;
-        
-        ui.head.setAttribute('cy', y);
-        ui.head.setAttribute('transform', `rotate(-15 110 ${y})`);
-
-        if (note.acc.symbol !== "") {
-            ui.acc.style.display = "block";
-            ui.acc.textContent = note.acc.symbol;
-            ui.acc.setAttribute('y', y); 
+        if (gameState.gameType === 'read') {
+            ui.placeInstruction.style.display = "none"; ui.placeControls.style.display = "none";
+            ui.staffSvg.classList.remove('interactive'); ui.replayBtn.style.display = "block";
+            ui.ghostGroup.style.display = "none"; 
         } else {
-            ui.acc.style.display = "none";
+            ui.placeInstruction.style.display = "block"; ui.placeControls.style.display = "flex";
+            ui.staffSvg.classList.add('interactive'); ui.replayBtn.style.display = "none";
+            selectAccidental('natural');
         }
-
-        if (y >= 100) {
-            ui.stem.setAttribute('x1', 119); ui.stem.setAttribute('x2', 119);
-            ui.stem.setAttribute('y1', y); ui.stem.setAttribute('y2', y - 35);
-        } else {
-            ui.stem.setAttribute('x1', 101); ui.stem.setAttribute('x2', 101);
-            ui.stem.setAttribute('y1', y); ui.stem.setAttribute('y2', y + 35);
-        }
-
-        ui.ledgers.innerHTML = "";
-        if (y >= 160) { for (let ly = 160; ly <= y; ly += 20) addLedgerLine(ly); }
-        if (y <= 40) { for (let ly = 40; ly >= y; ly -= 20) addLedgerLine(ly); }
+        updateStats(); nextRound();
     }
-
-    function addLedgerLine(y) {
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", 85); line.setAttribute("x2", 135);
-        line.setAttribute("y1", y); line.setAttribute("y2", y);
-        line.setAttribute("stroke", "#2d3436"); line.setAttribute("stroke-width", "2");
-        ui.ledgers.appendChild(line);
-    }
-
-    // --- GAME LOOP ---
 
     function nextRound() {
         if(gameState.lives <= 0) return;
-        
-        gameState.isAnswering = false;
-        ui.feedback.textContent = "";
+        gameState.isAnswering = false; ui.feedback.textContent = ""; ui.interaction.innerHTML = "";
         gameState.currentNote = generateNote();
-        drawNote(gameState.currentNote);
 
-        ui.interaction.innerHTML = "";
-
-        if (gameState.difficulty === 'hard') {
-            renderHardModeInput();
+        if (gameState.gameType === 'read') {
+            drawNote(gameState.currentNote, ui);
+            ui.noteGroup.style.display = "block";
+            setTimeout(() => playTone(getFrequencyForNote(gameState.currentNote), 0.5), 300);
+            if (gameState.difficulty === 'hard') renderHardModeInput(); else renderButtons();
         } else {
-            renderButtons();
+            // Place Mode: Verstecke Lösung
+            ui.noteGroup.style.display = "none"; ui.ledgers.innerHTML = "";
+            ui.targetNoteName.textContent = gameState.currentNote.correctName;
+            if (gameState.difficulty === 'easy') { ui.placeControls.style.visibility = "hidden"; gameState.selectedPlaceAccidental = 'natural'; }
+            else { ui.placeControls.style.visibility = "visible"; selectAccidental('natural'); }
         }
     }
 
+    /* --- GHOST & PLACE LOGIC --- */
+    function selectAccidental(type) {
+        gameState.selectedPlaceAccidental = type;
+        Object.values(ui.accBtns).forEach(b => b.classList.remove('selected'));
+        if(type === 'natural') ui.accBtns.natural.classList.add('selected');
+        if(type === 'sharp') ui.accBtns.sharp.classList.add('selected');
+        if(type === 'flat') ui.accBtns.flat.classList.add('selected');
+    }
+
+    function getSnappedY(event) {
+        const rect = ui.staffSvg.getBoundingClientRect();
+        const scaleY = 200 / rect.height;
+        const clickY = (event.clientY - rect.top) * scaleY;
+        return Math.round(clickY / 10) * 10;
+    }
+
+    function handleStaffMove(event) {
+        if(gameState.gameType !== 'place' || gameState.isAnswering) return;
+        
+        const y = getSnappedY(event);
+        if(y < 20 || y > 190) { ui.ghostGroup.style.display = "none"; return; }
+
+        ui.ghostGroup.style.display = "block";
+        ui.ghostHead.setAttribute('cy', y);
+        ui.ghostHead.setAttribute('transform', `rotate(-15 110 ${y})`);
+        
+        let accSym = "";
+        if(gameState.selectedPlaceAccidental === 'sharp') accSym = "♯";
+        if(gameState.selectedPlaceAccidental === 'flat') accSym = "♭";
+        ui.ghostAcc.textContent = accSym;
+        ui.ghostAcc.setAttribute('y', y);
+
+        ui.ghostLedgers.innerHTML = "";
+        if (y >= 160) { for (let ly = 160; ly <= y; ly += 20) addLedgerLine(ly, ui.ghostLedgers, "#6c5ce7"); }
+        if (y <= 40) { for (let ly = 40; ly >= y; ly -= 20) addLedgerLine(ly, ui.ghostLedgers, "#6c5ce7"); }
+    }
+
+    function handleStaffLeave() { ui.ghostGroup.style.display = "none"; }
+
+    function handleStaffClick(event) {
+        if (gameState.gameType !== 'place' || gameState.isAnswering) return;
+
+        const snappedY = getSnappedY(event);
+        if(snappedY < 20 || snappedY > 190) return;
+
+        gameState.isAnswering = true;
+        ui.ghostGroup.style.display = "none";
+
+        let accType = gameState.selectedPlaceAccidental;
+        let userAcc = (accType === "sharp") ? "♯" : (accType === "flat" ? "♭" : "");
+        
+        // 1. Welche Note hat der User geklickt?
+        const clickedNoteObj = allBaseNotes.find(n => n.y === snappedY);
+        const clickedName = clickedNoteObj ? clickedNoteObj.name : "?";
+
+        // Zeichnen der User-Note (Visuelles Feedback)
+        const userNote = { base: { y: snappedY, name: clickedName }, acc: { symbol: userAcc, type: accType } };
+        drawNote(userNote, ui);
+        ui.noteGroup.style.display = "block";
+
+        // 2. PRÜFUNG: Stimmt der Name? (Oktave/Y egal!)
+        const targetName = gameState.currentNote.base.name;
+        const targetAccType = gameState.currentNote.acc.type;
+        
+        let nameCorrect = (clickedName === targetName);
+        let accCorrect = (accType === targetAccType);
+        
+        playTone(getFreqFromYAndAcc(snappedY, accType), 0.5);
+
+        if (nameCorrect && accCorrect) {
+            ui.head.style.fill = "var(--success)";
+            ui.feedback.textContent = "Richtig!"; ui.feedback.style.color = "var(--success)";
+            gameState.score++; updateStats(); setTimeout(nextRound, 1000);
+        } else {
+            ui.head.style.fill = "var(--error)";
+            ui.feedback.style.color = "var(--error)";
+            let msg = "Falsch!";
+            if (!nameCorrect) msg += " Falsche Note.";
+            else if (!accCorrect) msg += " Falsches Vorzeichen.";
+            
+            ui.feedback.textContent = msg;
+            gameState.lives--; updateStats();
+            if(gameState.lives <= 0) setTimeout(() => showGameOver(true), 1000);
+            else setTimeout(nextRound, 1500);
+        }
+    }
+
+    /* --- GAME READ & HELPERS --- */
     function renderButtons() {
         const isEasy = gameState.difficulty === 'easy';
         const grid = document.createElement('div');
         grid.className = isEasy ? 'options-grid easy-mode' : 'options-grid';
-        
-        const pool = ["C", "D", "E", "F", "G", "A", "H", "Cis", "Dis", "Fis", "Gis", "Ais", "Des", "Es", "Ges", "As", "B"];
+        let pool = isEasy ? ["C", "D", "E", "F", "G", "A", "H"] : ["C", "D", "E", "F", "G", "A", "H", "Cis", "Dis", "Fis", "Gis", "Ais", "Des", "Es", "Ges", "As", "B"];
         let opts = new Set([gameState.currentNote.correctName]);
         const count = isEasy ? 4 : 12;
-
         while(opts.size < count) opts.add(pool[Math.floor(Math.random()*pool.length)]);
-
         Array.from(opts).sort(() => Math.random() - 0.5).forEach(opt => {
             const btn = document.createElement('button');
-            btn.className = 'game-btn';
-            btn.textContent = opt;
-            btn.onclick = () => handleAnswer(opt, btn);
-            grid.appendChild(btn);
+            btn.className = 'game-btn'; btn.textContent = opt;
+            btn.onclick = () => handleReadAnswer(opt, btn); grid.appendChild(btn);
         });
         ui.interaction.appendChild(grid);
     }
-
     function renderHardModeInput() {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'input-area';
-
-        const input = document.createElement('input');
-        input.type = "text";
-        input.id = "answer-input";
-        input.placeholder = "Note (z.B. Cis)";
-        input.autocomplete = "off";
-
-        const submit = document.createElement('button');
-        submit.id = "submit-btn";
-        submit.textContent = "OK";
-        submit.onclick = () => {
-            if(input.value.trim() !== "") handleAnswer(input.value.trim(), null);
-        };
-
-        input.addEventListener("keypress", function(event) {
-            if (event.key === "Enter" && input.value.trim() !== "") {
-                handleAnswer(input.value.trim(), null);
-            }
-        });
-
-        wrapper.appendChild(input);
-        wrapper.appendChild(submit);
-        ui.interaction.appendChild(wrapper);
-        setTimeout(() => input.focus(), 50);
+        const wrapper = document.createElement('div'); wrapper.className = 'input-area';
+        const input = document.createElement('input'); input.type = "text"; input.id = "answer-input"; input.placeholder = "Note...";
+        const submit = document.createElement('button'); submit.id = "submit-btn"; submit.textContent = "OK";
+        submit.onclick = () => { if(input.value.trim() !== "") handleReadAnswer(input.value.trim(), null); };
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter" && input.value.trim() !== "") handleReadAnswer(input.value.trim(), null); });
+        wrapper.appendChild(input); wrapper.appendChild(submit);
+        ui.interaction.appendChild(wrapper); setTimeout(() => input.focus(), 50);
     }
-
-    function handleAnswer(answer, element) {
+    function handleReadAnswer(answer, element) {
         if(gameState.isAnswering) return;
-        
         const isCorrect = answer.toLowerCase() === gameState.currentNote.correctName.toLowerCase();
         gameState.isAnswering = true;
-
         if (isCorrect) {
-            if(element) element.classList.add('correct');
-            else {
-                document.getElementById('answer-input').style.borderColor = "var(--success)";
-                document.getElementById('submit-btn').style.backgroundColor = "var(--success)";
-            }
-            gameState.score++;
-            updateStats();
-            setTimeout(nextRound, 800);
+            if(element) element.classList.add('correct'); else { document.getElementById('answer-input').style.borderColor = "var(--success)"; document.getElementById('submit-btn').style.backgroundColor = "var(--success)"; }
+            playTone(880, 0.1); gameState.score++; updateStats(); setTimeout(nextRound, 800);
         } else {
-            if(element) element.classList.add('wrong');
-            else {
-                 document.getElementById('answer-input').style.borderColor = "var(--error)";
-                 document.getElementById('submit-btn').style.backgroundColor = "var(--error)";
-                 ui.feedback.textContent = `Falsch! Richtig wäre: ${gameState.currentNote.correctName}`;
-            }
-            
-            gameState.lives--;
-            updateStats();
-
-            if(gameState.lives <= 0) {
-                setTimeout(() => {
-                    ui.finalScore.textContent = gameState.score;
-                    ui.overlay.classList.add('visible');
-                }, 1000);
-            } else {
-                setTimeout(nextRound, gameState.difficulty === 'hard' ? 1500 : 800);
-            }
+            if(element) element.classList.add('wrong'); else { document.getElementById('answer-input').style.borderColor = "var(--error)"; ui.feedback.textContent = `Richtig: ${gameState.currentNote.correctName}`; }
+            playTone(150, 0.3); gameState.lives--; updateStats();
+            if(gameState.lives <= 0) setTimeout(() => showGameOver(true), 1000); else setTimeout(nextRound, 1500);
         }
+    }
+
+    function getNoteName(base, type) {
+        if(type === "natural") return base; if(type === "sharp") return base + "is";
+        if(base === "H") return "B"; if(base === "E") return "Es"; if(base === "A") return "As";
+        return base + "es";
+    }
+    function generateNote() {
+        let pool = allBaseNotes;
+        if (gameState.difficulty === 'easy') pool = allBaseNotes.filter(n => n.y >= 50 && n.y <= 160);
+        const base = pool[Math.floor(Math.random() * pool.length)];
+        let acc = accidentals[0];
+        if (gameState.difficulty !== 'easy' && Math.random() > 0.6) acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
+        return { base: base, acc: acc, correctName: getNoteName(base.name, acc.type) };
+    }
+    function drawNote(note, targetUi) {
+        const y = note.base.y; targetUi.head.setAttribute('cy', y); targetUi.head.setAttribute('transform', `rotate(-15 110 ${y})`);
+        targetUi.head.style.fill = "#2d3436";
+        if (note.acc.symbol !== "") { targetUi.acc.style.display = "block"; targetUi.acc.textContent = note.acc.symbol; targetUi.acc.setAttribute('y', y); }
+        else { targetUi.acc.style.display = "none"; }
+        if (y >= 100) { targetUi.stem.setAttribute('y1', y); targetUi.stem.setAttribute('y2', y - 35); }
+        else { targetUi.stem.setAttribute('y1', y); targetUi.stem.setAttribute('y2', y + 35); }
+        targetUi.ledgers.innerHTML = "";
+        if (y >= 160) { for (let ly = 160; ly <= y; ly += 20) addLedgerLine(ly, targetUi.ledgers); }
+        if (y <= 40) { for (let ly = 40; ly >= y; ly -= 20) addLedgerLine(ly, targetUi.ledgers); }
+    }
+    function addLedgerLine(y, container, color="#2d3436") {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", 85); line.setAttribute("x2", 135); line.setAttribute("y1", y); line.setAttribute("y2", y);
+        line.setAttribute("stroke", color); line.setAttribute("stroke-width", "2");
+        container.appendChild(line);
+    }
+    function updateStats() { let h = ""; for(let i=0; i<gameState.lives; i++) h += "❤"; ui.lives.textContent = h; ui.score.textContent = gameState.score; }
+    function showGameOver(saved) {
+        if(saved) {
+            highscores.push({ date: new Date().toLocaleDateString(), score: gameState.score, mode: (gameState.gameType==='read'?'Lesen':'Schreiben'), diff: gameState.difficulty });
+            highscores.sort((a,b) => b.score - a.score); highscores = highscores.slice(0, 5);
+            localStorage.setItem('musicScores', JSON.stringify(highscores));
+        }
+        ui.finalScore.textContent = gameState.score; ui.overlayTitle.textContent = saved ? "Verloren!" : "Beendet"; ui.overlay.classList.add('visible');
+    }
+    function updateHighscoreList() {
+        ui.scoreList.innerHTML = ""; if(highscores.length === 0) ui.scoreList.innerHTML = "<li>Noch keine Spiele gespielt!</li>";
+        highscores.forEach(s => { const li = document.createElement('li'); li.style.padding = "10px"; li.style.borderBottom = "1px solid #ddd"; li.innerHTML = `<strong>${s.score}</strong> (${s.mode || 'Training'} - ${s.diff})`; ui.scoreList.appendChild(li); });
+    }
+    function getFrequencyForNote(noteObj) { return getFreqFromYAndAcc(noteObj.base.y, noteObj.acc.type); }
+    function getFreqFromYAndAcc(y, accType) {
+        const yMap = { 190: 196.00, 180: 220.00, 170: 246.94, 160: 261.63, 150: 293.66, 140: 329.63, 130: 349.23, 120: 392.00, 110: 440.00, 100: 493.88, 90: 523.25, 80: 587.33, 70: 659.25, 60: 698.46, 50: 783.99, 40: 880.00, 30: 987.77, 20: 1046.50 };
+        let f = yMap[y] || 440; if(accType === "sharp") f *= 1.05946; if(accType === "flat") f /= 1.05946; return f;
+    }
+    /* --- PIANO --- */
+    function initPiano() {
+        const container = document.getElementById('piano-keyboard'); container.innerHTML = "";
+        const keys = [ { n: "C", oct: 4, type: "white", y: 160 }, { n: "C#", oct: 4, type: "black", ref: "C", y: 160 }, { n: "D", oct: 4, type: "white", y: 150 }, { n: "D#", oct: 4, type: "black", ref: "D", y: 150 }, { n: "E", oct: 4, type: "white", y: 140 }, { n: "F", oct: 4, type: "white", y: 130 }, { n: "F#", oct: 4, type: "black", ref: "F", y: 130 }, { n: "G", oct: 4, type: "white", y: 120 }, { n: "G#", oct: 4, type: "black", ref: "G", y: 120 }, { n: "A", oct: 4, type: "white", y: 110 }, { n: "A#", oct: 4, type: "black", ref: "A", y: 110 }, { n: "H", oct: 4, type: "white", y: 100 }, { n: "C", oct: 5, type: "white", y: 90 }, { n: "C#", oct: 5, type: "black", ref: "C5", y: 90 }, { n: "D", oct: 5, type: "white", y: 80 }, { n: "D#", oct: 5, type: "black", ref: "D5", y: 80 }, { n: "E", oct: 5, type: "white", y: 70 }, { n: "F", oct: 5, type: "white", y: 60 }, { n: "F#", oct: 5, type: "black", ref: "F5", y: 60 }, { n: "G", oct: 5, type: "white", y: 50 }, { n: "G#", oct: 5, type: "black", ref: "G5", y: 50 }, { n: "A", oct: 5, type: "white", y: 40 } ];
+        let whiteCount = 0;
+        keys.forEach(k => {
+            const btn = document.createElement('div'); btn.className = `key ${k.type}`;
+            if (k.type === "white") { container.appendChild(btn); whiteCount++; } else { let prevWhites = keys.filter(x => x.type === 'white' && keys.indexOf(x) < keys.indexOf(k)).length; let leftPos = (prevWhites * 44) - 16; btn.style.left = leftPos + "px"; container.appendChild(btn); }
+            btn.onmousedown = () => { btn.classList.add('active'); playPianoNote(k); }; btn.onmouseup = () => btn.classList.remove('active'); btn.onmouseleave = () => btn.classList.remove('active');
+        });
+        container.style.width = (whiteCount * 44) + "px";
+    }
+    function playPianoNote(keyData) {
+        let f = getFreqFromYAndAcc(keyData.y, keyData.n.includes("#") ? "sharp" : "natural"); playTone(f);
+        ui.pGroup.style.display = "block"; const y = keyData.y; ui.pHead.setAttribute('cy', y); ui.pHead.setAttribute('transform', `rotate(-15 110 ${y})`);
+        if (y >= 100) { ui.pStem.setAttribute('y1', y); ui.pStem.setAttribute('y2', y - 35); } else { ui.pStem.setAttribute('y1', y); ui.pStem.setAttribute('y2', y + 35); }
+        if (keyData.n.includes("#")) { ui.pAcc.style.display = "block"; ui.pAcc.textContent = "♯"; ui.pAcc.setAttribute('y', y); } else { ui.pAcc.style.display = "none"; }
+        ui.pLedgers.innerHTML = ""; if (y >= 160) { for (let ly = 160; ly <= y; ly += 20) addLedgerLine(ly, ui.pLedgers); } if (y <= 40) { for (let ly = 40; ly >= y; ly -= 20) addLedgerLine(ly, ui.pLedgers); }
+        let name = keyData.n.replace("#", "is"); if(keyData.oct === 5) name += "'"; ui.pName.textContent = name;
     }
 </script>
 </body>
