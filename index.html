@@ -3,27 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎵 Musik-Master 11.0 (Combo & Zeit)</title>
+    <title>🎵 Musik-Master 12.6 (Fix: Sound)</title>
     <style>
         /* --- BASIS STYLES --- */
         :root {
             --primary: #6c5ce7; --secondary: #a29bfe; --accent: #00cec9;
             --bg: #dfe6e9; --surface: #ffffff; --error: #ff7675;
             --success: #00b894; --text: #2d3436; --fire: #e17055;
+            --gold: #ffd700;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0; color: var(--text); user-select: none;
-            overflow: hidden; /* Wichtig für Konfetti */
+            overflow: hidden;
         }
         .app-container {
             background-color: var(--surface); padding: 2rem; border-radius: 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;
             max-width: 750px; width: 90%; position: relative; transition: all 0.3s ease;
-            max-height: 95vh; overflow-y: auto; z-index: 10;
+            max-height: 95vh; overflow-y: auto; z-index: 10; border: 4px solid transparent;
         }
+        
+        /* GOLDEN ROUND STYLES */
+        .app-container.golden-mode {
+            border-color: var(--gold);
+            box-shadow: 0 0 30px var(--gold);
+            animation: pulse-gold 2s infinite;
+        }
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 20px var(--gold); }
+            50% { box-shadow: 0 0 40px var(--gold); transform: scale(1.01); }
+            100% { box-shadow: 0 0 20px var(--gold); }
+        }
+        .golden-badge {
+            background-color: var(--gold); color: #fff; padding: 5px 15px; border-radius: 20px;
+            font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 10px; display: inline-block; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            animation: pop 0.5s;
+        }
+
         h1 { margin-top: 0; color: var(--primary); }
         h2 { color: var(--text); }
         .screen { display: none; animation: fadeIn 0.4s; }
@@ -49,33 +69,42 @@
         .btn-easy { background-color: var(--success); }
         .btn-medium { background-color: var(--primary); }
         .btn-hard { background-color: var(--error); }
+        .btn-rhythm { background-color: var(--fire); }
         
-        /* HEADER mit Combo & Timer */
+        /* HEADER mit Combo & Lives */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.2rem; font-weight: 800; height: 40px;}
         .back-btn { background: none; border: 2px solid var(--text); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: var(--text); transition: all 0.2s; }
         .back-btn:hover { background: var(--text); color: white; }
         
         .status-box { display: flex; gap: 15px; align-items: center; }
-        .lives { color: var(--error); letter-spacing: 2px; }
-        .timer { color: var(--text); border: 2px solid var(--text); padding: 2px 8px; border-radius: 5px; min-width: 60px; }
-        .timer.urgent { color: var(--error); border-color: var(--error); animation: pulse 0.5s infinite alternate; }
+        .lives { color: var(--error); letter-spacing: 2px; font-size: 1.5rem; }
 
         .score-container { text-align: right; }
         .score { color: var(--primary); }
         .combo-display { font-size: 0.9rem; color: var(--fire); height: 20px; opacity: 0; transition: opacity 0.2s; }
         .combo-display.active { opacity: 1; font-weight: bold; animation: pop 0.3s; }
 
-        /* --- NOTENBLATT --- */
-        .sheet-music { background: #fff; border: 3px solid var(--text); border-radius: 15px; margin-bottom: 25px; height: 220px; position: relative; overflow: hidden; }
+        /* --- VISUAL DISPLAY (Notenblatt & Bilder) --- */
+        .sheet-music { background: #fff; border: 3px solid var(--text); border-radius: 15px; margin-bottom: 25px; height: 220px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .sheet-music.interactive { cursor: none; }
         .sheet-music.interactive:hover { border-color: var(--primary); }
-        svg { width: 100%; height: 100%; }
+        
+        /* Spezielle Anpassung für Klavier-Modus */
+        #piano-screen .sheet-music { height: 160px; max-width: 400px; margin-left: auto; margin-right: auto; }
+
+        /* SVG für Noten */
+        svg#staff, svg#piano-staff { width: 100%; height: 100%; display: block; }
         .acc-text { font-family: 'Times New Roman', serif; dominant-baseline: central; text-anchor: end; pointer-events: none; }
+        
+        /* Bild für Rhythmus */
+        #rhythm-image { max-height: 90%; max-width: 90%; object-fit: contain; display: none; }
 
         /* --- GAME INPUTS --- */
         .options-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .options-grid.easy-mode { grid-template-columns: repeat(2, 1fr); }
-        .game-btn { background-color: var(--bg); border: none; padding: 15px 5px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; color: var(--text); cursor: pointer; transition: transform 0.1s, background-color 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .options-grid.rhythm-mode { grid-template-columns: repeat(3, 1fr); }
+
+        .game-btn { background-color: var(--bg); border: none; padding: 15px 5px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; color: var(--text); cursor: pointer; transition: transform 0.1s, background-color 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); word-wrap: break-word;}
         .game-btn:hover { transform: translateY(-2px); background-color: var(--secondary); color: white; }
         .game-btn.correct { background-color: var(--success) !important; color: white !important; animation: pop 0.3s; }
         .game-btn.wrong { background-color: var(--error) !important; color: white !important; animation: shake 0.4s; }
@@ -103,7 +132,6 @@
         /* --- ANIMATIONS & OVERLAYS --- */
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
         @keyframes pop { 50% { transform: scale(1.15); } }
-        @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
         
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); border-radius: 30px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; visibility: hidden; opacity: 0; transition: opacity 0.3s; }
         .overlay.visible { visibility: visible; opacity: 1; }
@@ -111,10 +139,14 @@
         
         /* THEORIE STYLES */
         .theory-content { text-align: left; line-height: 1.6; }
-        .theory-section { margin-bottom: 25px; }
+        .theory-section { margin-bottom: 30px; }
         .theory-box { background: #f1f2f6; border-left: 5px solid var(--accent); padding: 15px; margin: 10px 0; border-radius: 0 10px 10px 0; }
-        .mnemonic { font-weight: bold; color: var(--primary); font-size: 1.1em; display: block; margin-top: 5px;}
+        .mnemonic { font-weight: bold; color: var(--primary); font-size: 1.1em; display: block; margin-top: 5px; margin-bottom: 10px; text-align: center;}
         .highlight { color: var(--error); font-weight: bold; }
+        
+        /* SVG in Theorie */
+        .theory-svg { width: 100%; height: 100px; display: block; margin: 10px 0; background: white; border-radius: 8px; border: 1px solid #ddd; }
+        .theory-text { font-family: sans-serif; font-weight: bold; fill: var(--primary); dominant-baseline: central; text-anchor: middle; }
 
         /* KONFETTI CANVAS */
         #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
@@ -124,7 +156,7 @@
 
 <canvas id="confetti-canvas"></canvas>
 
-<div class="app-container">
+<div id="main-app" class="app-container">
     
     <div id="dashboard-screen" class="screen active">
         <h1>🎵 Musik-Master</h1>
@@ -167,37 +199,23 @@
             <button class="btn-menu btn-accent" style="background-color: var(--accent)" onclick="selectGameType('place')">
                 ✍️ Noten schreiben<br><span style="font-size:0.8rem; opacity:0.8">Zeichne die Note ins System.</span>
             </button>
-        </div>
-    </div>
-
-    <div id="mode-menu-screen" class="screen">
-        <header>
-            <button class="back-btn" onclick="switchScreen('training-menu-screen')">⬅ Zurück</button>
-            <span>Modus wählen</span>
-            <div style="width:60px"></div>
-        </header>
-        <h2>Wie willst du spielen?</h2>
-        <div class="menu-buttons">
-            <button class="btn-menu" style="background-color: var(--error)" onclick="selectGameMode('survival')">
-                ❤️ Überleben<br><span style="font-size:0.8rem; opacity:0.8">Du hast 3 Leben. Keine Zeitbegrenzung.</span>
-            </button>
-            <button class="btn-menu" style="background-color: var(--primary)" onclick="selectGameMode('time')">
-                ⏱️ Zeit-Attacke<br><span style="font-size:0.8rem; opacity:0.8">60 Sekunden! Wie viele schaffst du?</span>
+            <button class="btn-menu btn-rhythm" onclick="selectGameType('rhythm')">
+                ⏱️ Notenwerte<br><span style="font-size:0.8rem; opacity:0.8">Erkennst du Ganze, Halbe & Pausen?</span>
             </button>
         </div>
     </div>
 
     <div id="difficulty-screen" class="screen">
         <header>
-            <button class="back-btn" onclick="switchScreen('mode-menu-screen')">⬅ Zurück</button>
+            <button class="back-btn" onclick="switchScreen('training-menu-screen')">⬅ Zurück</button>
             <span>Stufe</span>
             <div style="width:60px"></div>
         </header>
         <h2>Wähle deine Stufe:</h2>
         <div class="menu-buttons">
-            <button class="btn-menu btn-easy" onclick="initGame('easy')">🌱 Einfach<br><span style="font-size:0.8rem; opacity:0.8">Stammnoten (C-D-E...)</span></button>
-            <button class="btn-menu btn-medium" onclick="initGame('medium')">🎵 Mittel<br><span style="font-size:0.8rem; opacity:0.8">Mit Vorzeichen (Fis, Es...)</span></button>
-            <button class="btn-menu btn-hard" onclick="initGame('hard')">🔥 Schwierig<br><span style="font-size:0.8rem; opacity:0.8">Profi-Modus!</span></button>
+            <button class="btn-menu btn-easy" onclick="initGame('easy')">🌱 Einfach<br><span style="font-size:0.8rem; opacity:0.8" id="diff-desc-easy">Stammnoten (C-D-E...)</span></button>
+            <button class="btn-menu btn-medium" onclick="initGame('medium')">🎵 Mittel<br><span style="font-size:0.8rem; opacity:0.8" id="diff-desc-medium">Mit Vorzeichen (Fis, Es...)</span></button>
+            <button class="btn-menu btn-hard" onclick="initGame('hard')">🔥 Schwierig<br><span style="font-size:0.8rem; opacity:0.8" id="diff-desc-hard">Profi-Modus!</span></button>
         </div>
     </div>
 
@@ -207,7 +225,6 @@
             
             <div class="status-box">
                 <div class="lives" id="lives-display"></div>
-                <div class="timer" id="timer-display" style="display:none">60s</div>
             </div>
 
             <div class="score-container">
@@ -215,6 +232,8 @@
                 <div class="combo-display" id="combo-display">🔥 x2</div>
             </div>
         </header>
+        
+        <div id="golden-round-badge" class="golden-badge" style="display:none">✨ Goldene Runde ✨</div>
 
         <div id="place-instruction" style="display:none; text-align:center;">
             <span>Suche Note:</span>
@@ -246,6 +265,9 @@
                     <text id="ghost-acc" x="92" y="100" font-size="34" fill="#6c5ce7" class="acc-text">♯</text>
                 </g>
             </svg>
+            
+            <img id="rhythm-image" src="" alt="Notenwert">
+
             <button id="replay-sound-btn" onclick="playCurrentGameNote()" style="position:absolute; bottom:10px; right:10px; border:none; background:none; cursor:pointer; font-size:1.5rem">🔊</button>
         </div>
 
@@ -267,30 +289,85 @@
         </header>
         <div class="theory-content">
             <div class="theory-section">
-                <h3>🎼 Der Violinschlüssel</h3>
-                <p>Kringelt sich um die 2. Linie von unten (G-Linie).</p>
-            </div>
-            <div class="theory-section">
-                <h3>1. Noten auf den Linien</h3>
+                <h3>1. Die Linien (E-G-H-D-F)</h3>
+                <p>Noten, die genau <strong>auf</strong> einer Linie liegen.</p>
                 <div class="theory-box">
                     <span class="mnemonic"><span class="highlight">E</span>ine <span class="highlight">G</span>ans <span class="highlight">H</span>at <span class="highlight">D</span>rei <span class="highlight">F</span>üße</span>
-                    <br>Noten: <strong>E - G - H - D - F</strong>
+                    <svg viewBox="0 0 200 120" class="theory-svg">
+                        <g stroke="#999" stroke-width="2">
+                            <line x1="10" y1="20" x2="190" y2="20" />
+                            <line x1="10" y1="40" x2="190" y2="40" />
+                            <line x1="10" y1="60" x2="190" y2="60" />
+                            <line x1="10" y1="80" x2="190" y2="80" />
+                            <line x1="10" y1="100" x2="190" y2="100" />
+                        </g>
+                        <text x="30" y="100" class="theory-text">E</text>
+                        <text x="60" y="80" class="theory-text">G</text>
+                        <text x="90" y="60" class="theory-text">H</text>
+                        <text x="120" y="40" class="theory-text">D</text>
+                        <text x="150" y="20" class="theory-text">F</text>
+                    </svg>
                 </div>
             </div>
+
             <div class="theory-section">
-                <h3>2. Noten in den Zwischenräumen</h3>
+                <h3>2. Die Zwischenräume (F-A-C-E)</h3>
+                <p>Noten, die <strong>zwischen</strong> den Linien liegen (wie das englische Wort für Gesicht).</p>
                 <div class="theory-box">
                     <span class="mnemonic"><span class="highlight">F</span> - <span class="highlight">A</span> - <span class="highlight">C</span> - <span class="highlight">E</span></span>
-                    <br>Noten: <strong>F - A - C - E</strong>
-                    <br>(Fritz Aß Citronen Eis)
+                    <svg viewBox="0 0 200 120" class="theory-svg">
+                        <g stroke="#999" stroke-width="2">
+                            <line x1="10" y1="20" x2="190" y2="20" />
+                            <line x1="10" y1="40" x2="190" y2="40" />
+                            <line x1="10" y1="60" x2="190" y2="60" />
+                            <line x1="10" y1="80" x2="190" y2="80" />
+                            <line x1="10" y1="100" x2="190" y2="100" />
+                        </g>
+                        <text x="45" y="90" class="theory-text">F</text>
+                        <text x="75" y="70" class="theory-text">A</text>
+                        <text x="105" y="50" class="theory-text">C</text>
+                        <text x="135" y="30" class="theory-text">E</text>
+                    </svg>
                 </div>
             </div>
+
             <div class="theory-section">
-                <h3>3. Vorzeichen</h3>
-                <ul>
-                    <li><strong>♯ (Kreuz):</strong> Hängt <strong>-is</strong> an (Fis, Gis).</li>
-                    <li><strong>♭ (B):</strong> Hängt <strong>-es</strong> an (Des, Es, As, B).</li>
-                </ul>
+                <h3>3. Vorzeichen (# und b)</h3>
+                <div class="theory-box">
+                    <h4>♯ Das Kreuz (Sharp)</h4>
+                    <p>Macht die Note höher. Man hängt ein <strong>-is</strong> an den Namen.</p>
+                    <ul>
+                        <li>C ➝ <strong>Cis</strong></li>
+                        <li>F ➝ <strong>Fis</strong></li>
+                        <li>G ➝ <strong>Gis</strong></li>
+                    </ul>
+                </div>
+                <div class="theory-box">
+                    <h4>♭ Das B-Vorzeichen (Flat)</h4>
+                    <p>Macht die Note tiefer. Man hängt ein <strong>-es</strong> an.</p>
+                    <ul>
+                        <li>D ➝ <strong>Des</strong></li>
+                        <li>G ➝ <strong>Ges</strong></li>
+                    </ul>
+                    <p style="color:var(--error); font-weight:bold; font-size:0.9rem">⚠️ Ausnahmen:</p>
+                    <ul>
+                        <li>H ➝ <strong>B</strong> (Wichtig!)</li>
+                        <li>E ➝ <strong>Es</strong> (nicht Ees)</li>
+                        <li>A ➝ <strong>As</strong> (nicht Aes)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="theory-section">
+                <h3>4. Notenwerte</h3>
+                <div class="theory-box">
+                    <ul>
+                        <li><strong>Ganze Note:</strong> 4 Schläge (o)</li>
+                        <li><strong>Halbe Note:</strong> 2 Schläge (Hals dran)</li>
+                        <li><strong>Viertel Note:</strong> 1 Schlag (Ausgemalt)</li>
+                        <li><strong>Achtel Note:</strong> 1/2 Schlag (Fähnchen)</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -355,6 +432,12 @@
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         osc.stop(audioCtx.currentTime + duration);
     }
+    
+    function playCurrentGameNote() {
+        if (!gameState.currentNote) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        playTone(getFrequencyForNote(gameState.currentNote), 0.5);
+    }
 
     /* --- DATA --- */
     const allBaseNotes = [
@@ -366,40 +449,59 @@
     ];
     const accidentals = [{ symbol: "", type: "natural" }, { symbol: "♯", type: "sharp" }, { symbol: "♭", type: "flat" }];
 
+    // RHYTHMUS DATEN
+    const rhythmData = [
+        { file: "ganze_note", name: "Ganze Note", type: "note" },
+        { file: "halbe_note", name: "Halbe Note", type: "note" },
+        { file: "viertel_note", name: "Viertel Note", type: "note" },
+        { file: "achtel_note", name: "Achtel Note", type: "note" },
+        { file: "achtel_paar", name: "Achtel Paar", type: "note" },
+        { file: "ganze_pause", name: "Ganze Pause", type: "rest" },
+        { file: "halbe_pause", name: "Halbe Pause", type: "rest" },
+        { file: "viertel_pause", name: "Viertel Pause", type: "rest" },
+        { file: "achtel_pause", name: "Achtel Pause", type: "rest" }
+    ];
+
     /* --- STATE --- */
     let gameState = {
         score: 0,
         combo: 0,
         lives: 3,
-        timeLeft: 60,
         difficulty: 'medium',
-        gameType: 'read', // read/place
-        gameMode: 'survival', // survival/time
+        gameType: 'read',
         currentNote: null,
         isAnswering: false,
         selectedPlaceAccidental: 'natural',
-        timerInterval: null
+        // Golden Round State
+        roundsPlayed: 0,
+        nextGoldenRound: 0,
+        isGoldenRound: false
     };
     let highscores = JSON.parse(localStorage.getItem('musicScores')) || [];
 
     /* --- UI REF --- */
     const ui = {
+        app: document.getElementById('main-app'),
         lives: document.getElementById('lives-display'),
-        timer: document.getElementById('timer-display'),
         score: document.getElementById('score-display'),
         combo: document.getElementById('combo-display'),
+        goldenBadge: document.getElementById('golden-round-badge'),
         interaction: document.getElementById('interaction-area'),
         feedback: document.getElementById('feedback-text'),
         overlay: document.getElementById('game-over'),
         overlayTitle: document.getElementById('overlay-title'),
         finalScore: document.getElementById('final-score'),
-        staffSvg: document.getElementById('sheet-music-container'),
+        staffSvg: document.getElementById('staff'),
+        rhythmImage: document.getElementById('rhythm-image'),
+        sheetContainer: document.getElementById('sheet-music-container'),
         noteGroup: document.getElementById('note-group'), head: document.getElementById('note-head'), stem: document.getElementById('note-stem'), acc: document.getElementById('accidental'), ledgers: document.getElementById('ledger-lines'),
         ghostGroup: document.getElementById('ghost-group'), ghostHead: document.getElementById('ghost-head'), ghostAcc: document.getElementById('ghost-acc'), ghostLedgers: document.getElementById('ghost-ledgers'),
         replayBtn: document.getElementById('replay-sound-btn'),
         placeInstruction: document.getElementById('place-instruction'), targetNoteName: document.getElementById('target-note-name'), placeControls: document.getElementById('place-controls-area'),
         accBtns: { natural: document.getElementById('btn-natural'), sharp: document.getElementById('btn-sharp'), flat: document.getElementById('btn-flat') },
-        pHead: document.getElementById('piano-head'), pStem: document.getElementById('piano-stem'), pAcc: document.getElementById('piano-acc'), pLedgers: document.getElementById('piano-ledgers'), pGroup: document.getElementById('piano-note-group'), pName: document.getElementById('piano-note-name'), scoreList: document.getElementById('score-list-ul')
+        pHead: document.getElementById('piano-head'), pStem: document.getElementById('piano-stem'), pAcc: document.getElementById('piano-acc'), pLedgers: document.getElementById('piano-ledgers'), pGroup: document.getElementById('piano-note-group'), pName: document.getElementById('piano-note-name'), scoreList: document.getElementById('score-list-ul'),
+        // Diff descriptions
+        descEasy: document.getElementById('diff-desc-easy'), descMedium: document.getElementById('diff-desc-medium'), descHard: document.getElementById('diff-desc-hard')
     };
 
     /* --- NAVIGATION --- */
@@ -407,17 +509,22 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
         ui.overlay.classList.remove('visible');
+        // Reset Golden Mode visuals when leaving game
+        if(screenId !== 'game-screen') ui.app.classList.remove('golden-mode');
         if(screenId === 'highscores-screen') updateHighscoreList();
-        stopTimer();
     }
     
     function selectGameType(type) {
         gameState.gameType = type;
-        switchScreen('mode-menu-screen');
-    }
-
-    function selectGameMode(mode) {
-        gameState.gameMode = mode;
+        if (type === 'rhythm') {
+            ui.descEasy.textContent = "Nur Noten";
+            ui.descMedium.textContent = "Nur Noten (Schneller?)";
+            ui.descHard.textContent = "Noten & Pausen";
+        } else {
+            ui.descEasy.textContent = "Stammnoten (C-D-E...)";
+            ui.descMedium.textContent = "Mit Vorzeichen (Fis, Es...)";
+            ui.descHard.textContent = "Profi-Modus!";
+        }
         switchScreen('difficulty-screen');
     }
 
@@ -434,116 +541,134 @@
         gameState.score = 0;
         gameState.combo = 0;
         gameState.lives = 3;
-        gameState.timeLeft = 60;
         gameState.isAnswering = false;
+        gameState.currentNote = null; 
+        
+        // Init Golden Round
+        gameState.roundsPlayed = 0;
+        gameState.nextGoldenRound = Math.floor(Math.random() * 11) + 10; // 10-20
+        gameState.isGoldenRound = false;
 
         switchScreen('game-screen');
         ui.feedback.textContent = "";
-        
-        // Mode specific setup
-        if (gameState.gameMode === 'survival') {
-            ui.lives.style.display = 'block';
-            ui.timer.style.display = 'none';
-        } else {
-            ui.lives.style.display = 'none';
-            ui.timer.style.display = 'block';
-            startTimer();
-        }
+        ui.lives.style.display = 'block';
 
         // Type specific setup
+        ui.placeInstruction.style.display = "none"; 
+        ui.placeControls.style.display = "none";
+        ui.ghostGroup.style.display = "none"; 
+
         if (gameState.gameType === 'read') {
-            ui.placeInstruction.style.display = "none"; ui.placeControls.style.display = "none";
-            ui.staffSvg.classList.remove('interactive'); ui.replayBtn.style.display = "block";
-            ui.ghostGroup.style.display = "none"; 
-        } else {
-            ui.placeInstruction.style.display = "block"; ui.placeControls.style.display = "flex";
-            ui.staffSvg.classList.add('interactive'); ui.replayBtn.style.display = "none";
+            ui.staffSvg.style.display = "block";
+            ui.rhythmImage.style.display = "none";
+            ui.sheetContainer.classList.remove('interactive'); 
+            ui.replayBtn.style.display = "block";
+        } 
+        else if (gameState.gameType === 'place') {
+            ui.staffSvg.style.display = "block";
+            ui.rhythmImage.style.display = "none";
+            ui.placeInstruction.style.display = "block"; 
+            ui.placeControls.style.display = "flex";
+            ui.sheetContainer.classList.add('interactive'); 
+            ui.replayBtn.style.display = "none";
             selectAccidental('natural');
         }
+        else if (gameState.gameType === 'rhythm') {
+            ui.staffSvg.style.display = "none";
+            ui.rhythmImage.style.display = "block";
+            ui.sheetContainer.classList.remove('interactive');
+            ui.replayBtn.style.display = "none"; 
+        }
+
         updateStats(); nextRound();
     }
 
-    function startTimer() {
-        stopTimer();
-        ui.timer.classList.remove('urgent');
-        ui.timer.textContent = "60s";
-        gameState.timerInterval = setInterval(() => {
-            gameState.timeLeft--;
-            ui.timer.textContent = gameState.timeLeft + "s";
-            if(gameState.timeLeft <= 10) ui.timer.classList.add('urgent');
-            if(gameState.timeLeft <= 0) {
-                stopTimer();
-                showGameOver(true);
-            }
-        }, 1000);
-    }
-
-    function stopTimer() {
-        if(gameState.timerInterval) clearInterval(gameState.timerInterval);
-    }
-
     function nextRound() {
-        if(gameState.lives <= 0 && gameState.gameMode === 'survival') return;
-        if(gameState.timeLeft <= 0 && gameState.gameMode === 'time') return;
+        if(gameState.lives <= 0) return;
+
+        // Golden Round Logic check
+        gameState.roundsPlayed++;
+        if (gameState.roundsPlayed >= gameState.nextGoldenRound) {
+            gameState.isGoldenRound = true;
+            gameState.nextGoldenRound = gameState.roundsPlayed + Math.floor(Math.random() * 11) + 10; // next in 10-20
+            ui.app.classList.add('golden-mode');
+            ui.goldenBadge.style.display = "inline-block";
+        } else {
+            gameState.isGoldenRound = false;
+            ui.app.classList.remove('golden-mode');
+            ui.goldenBadge.style.display = "none";
+        }
 
         gameState.isAnswering = false; ui.feedback.textContent = ""; ui.interaction.innerHTML = "";
-        gameState.currentNote = generateNote();
-
-        if (gameState.gameType === 'read') {
-            drawNote(gameState.currentNote, ui);
-            ui.noteGroup.style.display = "block";
-            setTimeout(() => playTone(getFrequencyForNote(gameState.currentNote), 0.5), 300);
-            if (gameState.difficulty === 'hard') renderHardModeInput(); else renderButtons();
-        } else {
-            ui.noteGroup.style.display = "none"; ui.ledgers.innerHTML = "";
-            ui.targetNoteName.textContent = gameState.currentNote.correctName;
-            if (gameState.difficulty === 'easy') { ui.placeControls.style.visibility = "hidden"; gameState.selectedPlaceAccidental = 'natural'; }
-            else { ui.placeControls.style.visibility = "visible"; selectAccidental('natural'); }
+        
+        if (gameState.gameType === 'rhythm') {
+            gameState.currentNote = generateRhythmNote();
+            ui.rhythmImage.src = `img/${gameState.currentNote.file}.webp`;
+            renderRhythmButtons();
+        } 
+        else {
+            gameState.currentNote = generateNote();
+            if (gameState.gameType === 'read') {
+                drawNote(gameState.currentNote, ui);
+                ui.noteGroup.style.display = "block";
+                setTimeout(() => playTone(getFrequencyForNote(gameState.currentNote), 0.5), 300);
+                if (gameState.difficulty === 'hard') renderHardModeInput(); else renderButtons();
+            } else {
+                ui.noteGroup.style.display = "none"; ui.ledgers.innerHTML = "";
+                ui.targetNoteName.textContent = gameState.currentNote.correctName;
+                if (gameState.difficulty === 'easy') { ui.placeControls.style.visibility = "hidden"; gameState.selectedPlaceAccidental = 'natural'; }
+                else { ui.placeControls.style.visibility = "visible"; selectAccidental('natural'); }
+            }
         }
     }
 
     /* --- GAME LOGIC (CORE) --- */
     function handleCorrectAnswer() {
-        // Combo Logic
         gameState.combo++;
         let points = 1;
-        if(gameState.combo >= 3) points = 2; // Double points for combo
+        if(gameState.combo >= 3) points = 2;
         
+        let feedbackAdd = "";
+
+        // Golden Round Bonus
+        if (gameState.isGoldenRound) {
+            if(gameState.lives < 3) {
+                gameState.lives++;
+                feedbackAdd = " ❤️ Leben zurück!";
+            } else {
+                points += 5; // Bonus points instead of life
+                feedbackAdd = " 🌟 Bonus Punkte!";
+            }
+        }
+
         gameState.score += points;
         
         ui.head.style.fill = "var(--success)";
-        ui.feedback.textContent = gameState.combo >= 3 ? `Richtig! 🔥 x${gameState.combo}` : "Richtig!";
+        ui.feedback.textContent = (gameState.combo >= 3 ? `Richtig! 🔥 x${gameState.combo}` : "Richtig!") + feedbackAdd;
         ui.feedback.style.color = "var(--success)";
         
         playTone(880, 0.1); 
         updateStats();
-        setTimeout(nextRound, 800);
+        setTimeout(nextRound, 1200); // Etwas mehr Zeit um Bonus zu lesen
     }
 
     function handleWrongAnswer(msg) {
-        gameState.combo = 0; // Reset Combo
+        gameState.combo = 0;
         ui.head.style.fill = "var(--error)";
         ui.feedback.style.color = "var(--error)";
         ui.feedback.textContent = msg;
         
         playTone(150, 0.3);
         
-        if (gameState.gameMode === 'survival') {
-            gameState.lives--;
-            updateStats();
-            if(gameState.lives <= 0) setTimeout(() => showGameOver(true), 1000);
-            else setTimeout(nextRound, 1500);
-        } else {
-            // Im Time Mode geht es einfach weiter, aber Combo ist weg
-            updateStats();
-            setTimeout(nextRound, 800);
-        }
+        gameState.lives--;
+        updateStats();
+        if(gameState.lives <= 0) setTimeout(() => showGameOver(true), 1000);
+        else setTimeout(nextRound, 1500);
     }
 
     /* --- PLACE MODE LOGIC --- */
     function handleStaffClick(event) {
         if (gameState.gameType !== 'place' || gameState.isAnswering) return;
-        if (gameState.timeLeft <= 0 && gameState.gameMode === 'time') return;
 
         const snappedY = getSnappedY(event);
         if(snappedY < 20 || snappedY > 190) return;
@@ -576,12 +701,18 @@
         }
     }
 
-    /* --- READ MODE LOGIC --- */
+    /* --- READ & RHYTHM MODE LOGIC --- */
     function handleReadAnswer(answer, element) {
         if(gameState.isAnswering) return;
-        if (gameState.timeLeft <= 0 && gameState.gameMode === 'time') return;
         
-        const isCorrect = answer.toLowerCase() === gameState.currentNote.correctName.toLowerCase();
+        let isCorrect = false;
+        // Logic split based on game type
+        if (gameState.gameType === 'rhythm') {
+            isCorrect = answer === gameState.currentNote.name;
+        } else {
+            isCorrect = answer.toLowerCase() === gameState.currentNote.correctName.toLowerCase();
+        }
+
         gameState.isAnswering = true;
         
         if (isCorrect) {
@@ -591,7 +722,9 @@
         } else {
             if(element) element.classList.add('wrong');
             else { document.getElementById('answer-input').style.borderColor = "var(--error)"; }
-            handleWrongAnswer(`Richtig wäre: ${gameState.currentNote.correctName}`);
+            
+            let correctText = gameState.gameType === 'rhythm' ? gameState.currentNote.name : gameState.currentNote.correctName;
+            handleWrongAnswer(`Richtig wäre: ${correctText}`);
         }
     }
 
@@ -622,6 +755,8 @@
         if (y <= 40) { for (let ly = 40; ly >= y; ly -= 20) addLedgerLine(ly, ui.ghostLedgers, "#6c5ce7"); }
     }
     function handleStaffLeave() { ui.ghostGroup.style.display = "none"; }
+    
+    /* --- BUTTON RENDERING --- */
     function renderButtons() {
         const isEasy = gameState.difficulty === 'easy';
         const grid = document.createElement('div');
@@ -636,6 +771,29 @@
         });
         ui.interaction.appendChild(grid);
     }
+
+    function renderRhythmButtons() {
+        const grid = document.createElement('div');
+        grid.className = 'options-grid rhythm-mode';
+        
+        let availableOptions = [];
+        if (gameState.difficulty === 'hard') {
+            availableOptions = rhythmData.map(r => r.name);
+        } else {
+            availableOptions = rhythmData.filter(r => r.type === 'note').map(r => r.name);
+        }
+        
+        availableOptions.forEach(optName => {
+            const btn = document.createElement('button');
+            btn.className = 'game-btn'; 
+            btn.textContent = optName;
+            if(optName.length > 10) btn.style.fontSize = "0.9rem";
+            btn.onclick = () => handleReadAnswer(optName, btn); 
+            grid.appendChild(btn);
+        });
+        ui.interaction.appendChild(grid);
+    }
+
     function renderHardModeInput() {
         const wrapper = document.createElement('div'); wrapper.className = 'input-area';
         const input = document.createElement('input'); input.type = "text"; input.id = "answer-input"; input.placeholder = "Note...";
@@ -645,6 +803,7 @@
         wrapper.appendChild(input); wrapper.appendChild(submit);
         ui.interaction.appendChild(wrapper); setTimeout(() => input.focus(), 50);
     }
+    
     function updateStats() {
         let h = ""; for(let i=0; i<gameState.lives; i++) h += "❤";
         ui.lives.textContent = h; 
@@ -659,12 +818,16 @@
     function showGameOver(saved) {
         if(saved) {
             fireConfetti();
-            let modeStr = (gameState.gameType==='read'?'Lesen':'Schreiben') + " - " + (gameState.gameMode==='time'?'Zeit':'Survival');
-            highscores.push({ date: new Date().toLocaleDateString(), score: gameState.score, mode: modeStr, diff: gameState.difficulty });
+            let modeName = "Unbekannt";
+            if(gameState.gameType === 'read') modeName = "Lesen";
+            else if(gameState.gameType === 'place') modeName = "Schreiben";
+            else if(gameState.gameType === 'rhythm') modeName = "Rhythmus";
+
+            highscores.push({ date: new Date().toLocaleDateString(), score: gameState.score, mode: modeName, diff: gameState.difficulty });
             highscores.sort((a,b) => b.score - a.score); highscores = highscores.slice(0, 5);
             localStorage.setItem('musicScores', JSON.stringify(highscores));
         }
-        ui.finalScore.textContent = gameState.score; ui.overlayTitle.textContent = saved ? (gameState.gameMode === 'time' ? "Zeit um!" : "Verloren!") : "Beendet"; ui.overlay.classList.add('visible');
+        ui.finalScore.textContent = gameState.score; ui.overlayTitle.textContent = saved ? "Verloren!" : "Beendet"; ui.overlay.classList.add('visible');
     }
     function updateHighscoreList() {
         ui.scoreList.innerHTML = ""; if(highscores.length === 0) ui.scoreList.innerHTML = "<li>Noch keine Spiele gespielt!</li>";
@@ -673,14 +836,38 @@
 
     /* --- BASIC HELPERS --- */
     function getNoteName(base, type) { if(type === "natural") return base; if(type === "sharp") return base + "is"; if(base === "H") return "B"; if(base === "E") return "Es"; if(base === "A") return "As"; return base + "es"; }
+    
     function generateNote() {
         let pool = allBaseNotes;
         if (gameState.difficulty === 'easy') pool = allBaseNotes.filter(n => n.y >= 50 && n.y <= 160);
-        const base = pool[Math.floor(Math.random() * pool.length)];
-        let acc = accidentals[0];
-        if (gameState.difficulty !== 'easy' && Math.random() > 0.6) acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
-        return { base: base, acc: acc, correctName: getNoteName(base.name, acc.type) };
+        
+        let newNote;
+        do {
+            const base = pool[Math.floor(Math.random() * pool.length)];
+            let acc = accidentals[0];
+            if (gameState.difficulty !== 'easy' && Math.random() > 0.6) acc = Math.random() > 0.5 ? accidentals[1] : accidentals[2];
+            newNote = { base: base, acc: acc, correctName: getNoteName(base.name, acc.type) };
+        } while (gameState.currentNote && newNote.correctName === gameState.currentNote.correctName);
+        
+        return newNote;
     }
+
+    function generateRhythmNote() {
+        let pool = [];
+        if (gameState.difficulty === 'hard') {
+            pool = rhythmData; 
+        } else {
+            pool = rhythmData.filter(item => item.type === 'note'); 
+        }
+        
+        let newItem;
+        do {
+            newItem = pool[Math.floor(Math.random() * pool.length)];
+        } while (gameState.currentNote && newItem.name === gameState.currentNote.name);
+        
+        return newItem;
+    }
+
     function drawNote(note, targetUi) {
         const y = note.base.y; targetUi.head.setAttribute('cy', y); targetUi.head.setAttribute('transform', `rotate(-15 110 ${y})`);
         targetUi.head.style.fill = "#2d3436";
@@ -737,7 +924,7 @@
     /* --- PIANO --- */
     function initPiano() {
         const container = document.getElementById('piano-keyboard'); container.innerHTML = "";
-        const keys = [ { n: "C", oct: 4, type: "white", y: 160 }, { n: "C#", oct: 4, type: "black", ref: "C", y: 160 }, { n: "D", oct: 4, type: "white", y: 150 }, { n: "D#", oct: 4, type: "black", ref: "D", y: 150 }, { n: "E", oct: 4, type: "white", y: 140 }, { n: "F", oct: 4, type: "white", y: 130 }, { n: "F#", oct: 4, type: "black", ref: "F", y: 130 }, { n: "G", oct: 4, type: "white", y: 120 }, { n: "G#", oct: 4, type: "black", ref: "G", y: 120 }, { n: "A", oct: 4, type: "white", y: 110 }, { n: "A#", oct: 4, type: "black", ref: "A", y: 110 }, { n: "H", oct: 4, type: "white", y: 100 }, { n: "C", oct: 5, type: "white", y: 90 }, { n: "C#", oct: 5, type: "black", ref: "C5", y: 90 }, { n: "D", oct: 5, type: "white", y: 80 }, { n: "D#", oct: 5, type: "black", ref: "D5", y: 80 }, { n: "E", oct: 5, type: "white", y: 70 }, { n: "F", oct: 5, type: "white", y: 60 }, { n: "F#", oct: 5, type: "black", ref: "F5", y: 60 }, { n: "G", oct: 5, type: "white", y: 50 }, { n: "G#", oct: 5, type: "black", ref: "G5", y: 50 }, { n: "A", oct: 5, type: "white", y: 40 } ];
+        const keys = [ { n: "C", oct: 4, type: "white", y: 160 }, { n: "C#", oct: 4, type: "black", ref: "C", y: 160 }, { n: "D", oct: 4, type: "white", y: 150 }, { n: "D#", oct: 4, type: "black", ref: "D", y: 150 }, { n: "E", oct: 4, type: "white", y: 140 }, { n: "F", oct: 4, type: "white", y: 130 }, { n: "F#", oct: 4, type: "black", ref: "F", y: 130 }, { n: "G", oct: 4, type: "white", y: 120 }, { n: "G#", oct: 4, type: "black", ref: "G", y: 120 }, { n: "A", oct: 4, type: "white", y: 110 }, { n: "A#", oct: 4, type: "black", ref: "A", y: 110 }, { n: "H", oct: 4, type: "white", y: 100 }, { n: "C", oct: 5, type: "white", y: 90 }, { n: "C#", oct: 5, type: "black", ref: "C5", y: 90 }, { n: "D", oct: 5, type: "white", y: 80 }, { n: "D#", oct: 5, type: "black", ref: "D5", y: 80 }, { n: "E", oct: 5, type: "white", y: 70 }, { n: "F", oct: 5, type: "white", y: 60 }, { n: "F#", oct: 5, type: "black", ref: "F5", y: 60 }, { n: "G", oct: 5, type: "white", y: 50 }, { n: "G#", oct: 5, type: "black", ref: "G5", y: 50 }, { n: "A", oct: 5, type: "white", y: 40 }, { n: "A#", oct: 5, type: "black", ref: "A5", y: 40 }, { n: "H", oct: 5, type: "white", y: 30 } ];
         let whiteCount = 0;
         keys.forEach(k => {
             const btn = document.createElement('div'); btn.className = `key ${k.type}`;
